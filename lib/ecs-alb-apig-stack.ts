@@ -4,18 +4,27 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as ecs_patterns from "aws-cdk-lib/aws-ecs-patterns";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
+import { QSNetworkStack } from '../lib/qs-network-stack';
 
 export class EcsAlbApigStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    /*
     const vpc = new ec2.Vpc(this, "Test-ECS-VPC", {
-      //maxAzs: 2, // Default is all AZs in the region
       availabilityZones: ['us-east-1a', 'us-east-1b']
     });
+    */
+    const networkClusterStack = new QSNetworkStack(scope, 'ecsNetworkClusterStackName', {
+      env: {
+        region: 'us-east-1'
+      },
+      vpcCidr: "10.101.0.0/16"
+    });
+
     // Create an ECS cluster
     const cluster = new ecs.Cluster(this, "Test-ECS-Cluster", {
-      vpc: vpc,
+      vpc: networkClusterStack.network.vpc,
     });
 
     // Create a Fargate service and load balancer
